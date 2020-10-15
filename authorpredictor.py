@@ -1,8 +1,6 @@
 import numpy as np
-#import sklearn
 import nltk
 import math
-#import sklearn.feature_extraction.text
 from nltk.stem import WordNetLemmatizer
 
 '''
@@ -13,10 +11,6 @@ Using One vs Rest
 Bigrams and Trigrams
 Lemmetization w/ nltk library
 '''
-
-TRIGRAM = 300  # weight of trigram
-BIGRAM = 100  # weight of bigram
-
 
 def bayesTrain(training_data, training_labels, fNumPosts):
     '''
@@ -38,7 +32,7 @@ def bayesTrain(training_data, training_labels, fNumPosts):
             else:
                 featDict[wlist[j]] = 1
                 numPosWords += 1
-            if(j+1 < len2):  # BiGram
+            if(j+1) < len2:  # BiGram
                 w = wlist[j]+wlist[j+1]
                 if w in featDict:
                     featDict[w] += BIGRAM
@@ -46,7 +40,7 @@ def bayesTrain(training_data, training_labels, fNumPosts):
                 else:
                     featDict[w] = BIGRAM
                     numPosWords += 1
-            if(j+2 < len2):  # TriGram
+            if(j+2) < len2:  # TriGram
                 w = wlist[j]+wlist[j+1]+wlist[j+2]
                 if w in featDict:
                     featDict[w] += TRIGRAM
@@ -72,9 +66,9 @@ def bayesTest(testing_data, featDictArr, priorProbDict, numPosWordsDic, totalPos
         words = testing_data[i].split()
         wdlen = len(words)
         for i in range(len(words)):
-            if (i+1 < wdlen):  # adding bigram
+            if (i+1) < wdlen:  # adding bigram
                 words.append(words[i]+words[i+1])
-            if (i+2 < wdlen):  # adding trigram
+            if (i+2) < wdlen:  # adding trigram
                 words.append(words[i]+words[i+1]+words[i+2])
         highestProb = -600000
         bestFeature = ""
@@ -88,11 +82,10 @@ def bayesTest(testing_data, featDictArr, priorProbDict, numPosWordsDic, totalPos
                     probPosGivenPos += math.log2(
                         1/(numPosWordsDic[featNameArr[feat]]+len(featDictArr[feat])))
             probPosGivenPos += priorProbDict[featNameArr[feat]]
-            if(probPosGivenPos > highestProb):
+            if probPosGivenPos > highestProb:
                 highestProb = probPosGivenPos
                 bestFeature = featNameArr[feat]
         solArray.append(bestFeature)
-
     return solArray
 
 
@@ -110,13 +103,15 @@ def run_train_test(training_data, training_labels, testing_data):
     Example output:
     return ['NickLouth']*len(testing_data)
     """
+    # weight of trigram and bigram
+    global TRIGRAM,BIGRAM
+    TRIGRAM,BIGRAM = 300,100
     # step 1 format the data
     lmtzr = WordNetLemmatizer()
     stopWords = []
     #stopWords = ["i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until","while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"]  # testing
-    len1 = len(training_data)
     # formatting training data
-    for i in range(len1):
+    for i in range(len(training_data)):
         temp_string = ""
         training_data[i] = training_data[i].lower()
         training_data[i] = training_data[i].replace(",", " , ").replace(
@@ -143,7 +138,6 @@ def run_train_test(training_data, training_labels, testing_data):
                 else:
                     temp_string += word+" "
         testing_data[i] = temp_string
-
     # grouping together all training data sentences with same writer
     # more time intensive way to do this but did so because wasn't sure whether I was going SVM or Bayes route initially
     fDic = {}
